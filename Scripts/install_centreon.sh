@@ -21,6 +21,7 @@ CENTREON_URL=https://packages.centreon.com/apt-standard-24.10-stable/
 CENTREON_PLUGIN_URL=https://packages.centreon.com/apt-plugins-stable/
 CENTREON_URL_KEY=https://apt-key.centreon.com
 
+
 function update_system(){
     # Mise à jour du système
     echo "[INFO] Mise à jour du système en cours..."
@@ -36,7 +37,7 @@ function update_system(){
 function install_dependencies(){
     # Installation des dépendances
     echo "[INFO] Installation des dépendances..."
-    if apt install -y lsb-release ca-certificates apt-ransport-https software-properties-common wget gnupg2 curl; then
+    if apt update && apt install -y lsb-release ca-certificates apt-transport-https software-properties-common wget gnupg2 curl; then
         echo "[OK] Installation des dépendances réussie !"
     else
         echo "[ERREUR] Echec de l'installation des dépendances."
@@ -47,22 +48,8 @@ function install_dependencies(){
 # Fonction : Ajout des dépôts
 function add_repositories(){
     echo "[INFO] Ajout des dépôts nécessaires..."
-    # Ajout du dépôt Sury pour PHP
-    if echo "deb $SURY_URL $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/sury-php.list; then
-        echo "[OK] Dépôt Sury ajouté avec succès !"
-    else
-        echo "[ERREUR] Echec de l'ajout du dépôt Sury."
-        exit 1
-    fi
-    # Ajout de la clé GPG du dépôt Sury
-    if wget -O- $SURY_URL_KEY | gpg --dearmor | tee /etc/apt/trusted.gpg.d/php.gpg > /dev/null 2>&1; then
-        echo "[OK] Clé GPG du dépôt Sury ajoutée avec succès !"
-    else
-        echo "[ERREUR] Echec de l'ajout de la clé GPG du dépôt Sury."
-        exit 1
-    fi
     # Ajout du dépôt MariaDB
-    if curl -LsS $MARIADB_URL |sudo bash -s -- --os-type=debian --os-version=12 --mariadb-server-version="mariadb-10.11"; then
+    if curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --os-type=debian --os-version=12 --mariadb-server-version="mariadb-10.11"; then
         echo "[OK] Dépôt MariaDB ajouté avec succès !"
     else
         echo "[ERREUR] Echec de l'ajout du dépôt MariaDB."
@@ -83,7 +70,7 @@ function add_repositories(){
         exit 1
     fi
     # Ajout de la clé GPG du dépôt Centreon
-    if wget -O- $CENTREON_URL_KEY | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1; then
+    if wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1; then
         echo "[OK] Clé GPG du dépôt Centreon ajoutée avec succès !"
     else
         echo "[ERREUR] Echec de l'ajout de la clé GPG du dépôt Centreon."
